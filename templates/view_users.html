@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreSphere - User Management</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Keeping CSS consistent */
+        :root { --primary: #2563eb; --secondary: #1e293b; --background: #f8fafc; --text: #0f172a; --white: #ffffff; --gray-light: #e2e8f0; --success: #10b981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--background); color: var(--text); min-height: 100vh; }
+        .navbar { background-color: var(--white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo-area { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .ss-logo { width: 36px; height: 36px; background: var(--primary); color: var(--white); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1rem; }
+        .brand-name { font-family: 'Poppins', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--text); }
+        .nav-links { display: flex; gap: 1.5rem; }
+        .nav-link { text-decoration: none; color: var(--secondary); font-weight: 600; font-size: 0.95rem; opacity: 0.7; transition: opacity 0.2s; }
+        .nav-link:hover { opacity: 1; color: var(--primary); }
+        .nav-link.active { opacity: 1; color: var(--primary); border-bottom-color: var(--primary); }
+        .nav-actions button { background: none; border: 2px solid var(--gray-light); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--secondary); transition: all 0.2s; }
+        .nav-actions button:hover { border-color: var(--secondary); background-color: var(--secondary); color: var(--white); }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        .section-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .section-header h2 { font-family: 'Poppins', sans-serif; font-size: 1.75rem; color: var(--secondary); }
+        .table-container { background: var(--white); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--gray-light); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        thead { background-color: #f1f5f9; }
+        th { padding: 1rem 1.5rem; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-light); font-size: 0.95rem; color: var(--text); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
+        .total-amount { font-weight: 700; color: var(--success); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo-area" onclick="window.location.href='admin_dashboard.html'">
+            <div class="ss-logo">SS</div>
+            <span class="brand-name">StoreSphere <span style="font-size:0.8rem; opacity:0.6; font-weight:500;">Admin</span></span>
+        </div>
+
+        <div class="nav-links">
+            <a href="admin_dashboard.html" class="nav-link">Products</a>
+            <a href="/view_users.html" class="nav-link active">Users</a>
+        </div>
+
+        <div class="nav-actions">
+            <button id="logoutBtn">Sign Out</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section-header">
+            <h2>Registered Users</h2>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Full Name</th>
+                        <th>Email Address</th>
+                        <th>Items Purchased</th>
+                        <th>Total Spent (LTV)</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr><td colspan="5" style="text-align:center;">Loading users...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/api/get_users')
+            .then(response => response.json())
+            .then(users => {
+                const tableBody = document.getElementById('usersTableBody');
+                tableBody.innerHTML = ''; 
+
+                if(users.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found in database.</td></tr>';
+                    return;
+                }
+
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>#${user.user_id}</td>
+                        <td style="font-weight: 500;">${user.full_name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.total_qty} units</td>
+                        <td class="total-amount">Rs. ${user.total_amount.toFixed(2)}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching users:', error);
+                document.getElementById('usersTableBody').innerHTML = 
+                    '<tr><td colspan="5" style="text-align:center; color:red;">Error loading data</td></tr>';
+            });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            fetch('/api/logout')
+            .then(res => res.json())
+            .then(data => { window.location.href = '/'; });
+        });
+    </script>
+</body>
+</html>

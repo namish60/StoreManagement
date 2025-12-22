@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreSphere - Admin Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #1e293b;
+            --background: #f8fafc;
+            --text: #0f172a;
+            --white: #ffffff;
+            --gray-light: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --disabled: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .ss-logo { width: 36px; height: 36px; background: var(--primary); color: var(--white); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1rem; }
+        .brand-name { font-family: 'Poppins', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--text); }
+
+        .nav-links { display: flex; gap: 1.5rem; }
+        .nav-link { text-decoration: none; color: var(--secondary); font-weight: 600; font-size: 0.95rem; opacity: 0.7; transition: opacity 0.2s; }
+        .nav-link:hover { opacity: 1; color: var(--primary); }
+        .nav-link.active { opacity: 1; color: var(--primary); border-bottom-color: var(--primary); }
+
+        .nav-actions button { background: none; border: 2px solid var(--gray-light); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--secondary); transition: all 0.2s; }
+        .nav-actions button:hover { border-color: var(--secondary); background-color: var(--secondary); color: var(--white); }
+
+        /* MAIN LAYOUT */
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        .section-header { margin-bottom: 2rem; }
+        .section-header h2 { font-family: 'Poppins', sans-serif; font-size: 1.75rem; color: var(--secondary); }
+
+        /* PRODUCT GRID */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+        .product-card { background: var(--white); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        
+        .card-image { height: 180px; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 3rem; position: relative; overflow: hidden; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-content { padding: 1.5rem; flex-grow: 1; }
+        .product-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text); }
+        .product-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; color: var(--secondary); font-size: 0.9rem; }
+        .price { font-weight: 700; color: var(--primary); }
+        .stock { font-weight: 500; }
+        .stock.low { color: var(--danger); }
+        .threshold-info { font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+
+        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: auto; }
+        .btn-card { padding: 0.6rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: background 0.2s; }
+        .btn-update { background-color: #eff6ff; color: var(--primary); }
+        .btn-update:hover { background-color: #dbeafe; }
+        .btn-delete { background-color: #fef2f2; color: var(--danger); }
+        .btn-delete:hover { background-color: #fee2e2; }
+
+        /* FAB */
+        .fab { position: fixed; bottom: 40px; right: 40px; width: 64px; height: 64px; background-color: var(--white); color: var(--primary); border-radius: 50%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 500; border: 2px solid var(--gray-light); }
+        .fab:hover { transform: scale(1.1) rotate(90deg); border-color: var(--primary); }
+        .fab span { margin-top: -4px; }
+
+        /* MODALS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.open { display: flex; opacity: 1; }
+        .modal-content { background: var(--white); padding: 2rem; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); transform: translateY(20px); transition: transform 0.3s; max-height: 90vh; overflow-y: auto; }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
+        .modal-header { font-family: 'Poppins', sans-serif; font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--secondary); }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--secondary); }
+        .form-group input { width: 100%; padding: 0.8rem; border: 2px solid var(--gray-light); border-radius: 8px; font-family: 'Inter', sans-serif; }
+        .form-group input:focus { outline: none; border-color: var(--primary); }
+        input[type="file"] { padding: 0.5rem; background: #f1f5f9; }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+        .btn-modal { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+        .btn-cancel { background: var(--gray-light); color: var(--secondary); }
+        .btn-save { background: var(--primary); color: var(--white); transition: all 0.2s; }
+        .btn-save:hover { background: var(--primary-dark); }
+
+        /* FIXED: Button Disabled State */
+        .btn-save:disabled, .btn-modal:disabled {
+            background-color: var(--disabled) !important;
+            cursor: not-allowed;
+            color: #ffffff;
+            opacity: 0.8;
+            transform: none !important;
+        }
+
+        /* TOAST */
+        #toast-container { visibility: hidden; min-width: 300px; background-color: var(--success); color: #fff; text-align: center; border-radius: 50px; padding: 16px 24px; position: fixed; z-index: 2000; left: 50%; top: 30px; transform: translateX(-50%) translateY(-100px); opacity: 0; transition: all 0.5s; box-shadow: 0 10px 15px rgba(0,0,0,0.1); font-family: 'Poppins', sans-serif; font-weight: 500; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        #toast-container.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Notification -->
+    <div id="toast-container">
+        <span>✓</span>
+        <span id="toast-message">Success</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo-area" onclick="window.location.reload()">
+            <div class="ss-logo">SS</div>
+            <span class="brand-name">StoreSphere <span style="font-size:0.8rem; opacity:0.6; font-weight:500;">Admin</span></span>
+        </div>
+
+        <div class="nav-links">
+            <a href="admin_dashboard.html" class="nav-link active">Products</a>
+            <a href="view_users.html" class="nav-link">Users</a>
+        </div>
+
+        <div class="nav-actions">
+            <button id="logoutBtn">Sign Out</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="section-header">
+            <h2>Product Catalogue (DynamoDB)</h2>
+        </div>
+        
+        <!-- Grid where products will be injected -->
+        <div class="product-grid" id="productGrid">
+            <p style="color:#64748b; font-style:italic;">Loading products...</p>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab" onclick="openAddModal()">
+        <span>+</span>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-content">
+            <div class="modal-header">Add New Product</div>
+            <form onsubmit="handleAddProduct(event)">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="newProdName" required placeholder="e.g. Wireless Mouse">
+                </div>
+                
+                <div class="form-group">
+                    <label>Product Image (Optional)</label>
+                    <input type="file" id="newProdImage" accept="image/*">
+                    <!-- Text removed as requested -->
+                </div>
+
+                <div class="form-group">
+                    <label>Price (Rs.)</label>
+                    <input type="number" id="newProdPrice" step="0.01" required placeholder="299.00">
+                </div>
+                <div class="form-group">
+                    <label>Initial Stock</label>
+                    <input type="number" id="newProdStock" required placeholder="100">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-cancel" onclick="closeModal('addModal')">Cancel</button>
+                    <button type="submit" class="btn-modal btn-save" id="addBtn">Add Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Update Stock Modal -->
+    <div class="modal-overlay" id="stockModal">
+        <div class="modal-content">
+            <div class="modal-header">Update Stock</div>
+            <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem;">Set new quantity for <b id="stockProdName"></b>.</p>
+            <form onsubmit="handleUpdateStock(event)">
+                <input type="hidden" id="stockProdId">
+                <div class="form-group">
+                    <label>New Quantity</label>
+                    <input type="number" id="newStockValue" required min="0">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-cancel" onclick="closeModal('stockModal')">Cancel</button>
+                    <button type="submit" class="btn-modal btn-save" id="updateBtn">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Store products globally
+        let products = [];
+
+        // 1. Fetch Products on Page Load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchProducts();
+        });
+
+        function fetchProducts() {
+            const grid = document.getElementById('productGrid');
+            
+            fetch('/api/products')
+            .then(res => res.json())
+            .then(data => {
+                products = data;
+                renderProducts();
+            })
+            .catch(err => {
+                console.error("Error fetching products:", err);
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; color: #ef4444; background: #fef2f2; padding: 2rem; border-radius: 12px; border: 1px solid #fee2e2;">
+                        <h3>Connection Error</h3>
+                        <p>Could not fetch products. Please ensure your <b>AWS IAM Role</b> has <b>AmazonDynamoDBFullAccess</b>.</p>
+                    </div>
+                `;
+            });
+        }
+
+        // 2. Render Products to Grid
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+
+            if(products.length === 0) {
+                grid.innerHTML = '<p style="color:#64748b; font-style:italic; grid-column: 1/-1; text-align:center;">No products in DynamoDB. Click + to add one.</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                let threshold = product.threshold || 10; 
+                let stockClass = product.stock < threshold ? 'low' : '';
+                let stockText = product.stock === 0 ? 'Out of Stock' : `${product.stock} units`;
+
+                let imageHtml = '';
+                if(product.image_data) {
+                    imageHtml = `<img src="${product.image_data}" alt="${product.name}">`;
+                } else {
+                    imageHtml = `<div style="font-size:3rem;">📦</div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="card-image">${imageHtml}</div>
+                    <div class="card-content">
+                        <div class="product-title">${product.name}</div>
+                        
+                        <div class="threshold-info">Threshold: ${threshold}</div>
+                        
+                        <div class="product-meta">
+                            <span class="price">Rs. ${parseFloat(product.price).toFixed(2)}</span>
+                            <span class="stock ${stockClass}">${stockText}</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-card btn-update" onclick="openStockModal('${product.product_id}')">Update Stock</button>
+                            <button class="btn-card btn-delete" onclick="deleteProduct('${product.product_id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 3. Add Product Logic
+        function handleAddProduct(e) {
+            e.preventDefault();
+            const btn = document.getElementById('addBtn');
+            const fileInput = document.getElementById('newProdImage');
+            const file = fileInput.files[0];
+
+            // Increased limit to 350KB (DynamoDB limit is 400KB), but removed text warning from UI
+            if (file && file.size > 350 * 1024) { 
+                alert("File is too large! Please choose a smaller image.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+
+            const name = document.getElementById('newProdName').value;
+            const price = parseFloat(document.getElementById('newProdPrice').value);
+            const stock = parseInt(document.getElementById('newProdStock').value);
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    sendProductData(name, price, stock, event.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                sendProductData(name, price, stock, null);
+            }
+        }
+
+        function sendProductData(name, price, stock, image) {
+            const btn = document.getElementById('addBtn');
+
+            fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price, stock, image })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    showToast('Product added successfully!');
+                    closeModal('addModal');
+                    document.querySelector('form').reset();
+                    fetchProducts(); // Refresh Grid from DB
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => {
+                alert("Network Error: Check console.");
+                console.error(error);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Add Product";
+            });
+        }
+
+        // 4. Update Stock Logic
+        function handleUpdateStock(e) {
+            e.preventDefault();
+            const btn = document.getElementById('updateBtn');
+            btn.disabled = true;
+            btn.innerText = "Updating...";
+
+            const id = document.getElementById('stockProdId').value;
+            const newStock = parseInt(document.getElementById('newStockValue').value);
+
+            fetch('/api/update_stock', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: id, stock: newStock })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    showToast('Stock updated!');
+                    closeModal('stockModal');
+                    fetchProducts(); // Refresh Grid from DB
+                } else {
+                    alert('Failed: ' + data.message);
+                }
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Update";
+            });
+        }
+
+        // 5. Delete Product Logic
+        function deleteProduct(id) {
+            if(confirm("Delete this product?")) {
+                fetch(`/api/delete_product/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        showToast('Product removed.');
+                        fetchProducts(); // Refresh Grid from DB
+                    } else {
+                        alert('Failed to delete');
+                    }
+                });
+            }
+        }
+
+        // --- UI Helpers ---
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('open');
+            document.getElementById('newProdImage').value = "";
+        }
+
+        function openStockModal(id) {
+            const product = products.find(p => p.product_id === id);
+            if(product) {
+                document.getElementById('stockProdId').value = id;
+                document.getElementById('stockProdName').textContent = product.name;
+                document.getElementById('newStockValue').value = product.stock;
+                document.getElementById('stockModal').classList.add('open');
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('open');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast-container");
+            document.getElementById("toast-message").textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('open');
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            fetch('/api/logout').then(() => window.location.href = '/');
+        });
+    </script>
+</body>
+</html>

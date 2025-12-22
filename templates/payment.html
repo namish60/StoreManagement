@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreSphere - Secure Payment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS REMAINS THE SAME */
+        :root { --primary: #2563eb; --secondary: #1e293b; --background: #f8fafc; --text: #0f172a; --white: #ffffff; --gray-light: #e2e8f0; --success: #10b981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--background); color: var(--text); min-height: 100vh; }
+        .navbar { background-color: var(--white); padding: 1rem 2rem; display: flex; align-items: center; border-bottom: 1px solid var(--gray-light); }
+        .ss-logo { width: 32px; height: 32px; background: var(--primary); color: var(--white); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-weight: 800; margin-right: 10px; }
+        .brand-name { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.2rem; }
+        .checkout-container { max-width: 900px; margin: 3rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; }
+        .payment-section { background: var(--white); padding: 2rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        h2 { font-family: 'Poppins', sans-serif; margin-bottom: 1.5rem; color: var(--secondary); }
+        .card-visual { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; position: relative; overflow: hidden; }
+        .card-visual::after { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+        .chip { width: 40px; height: 28px; background: #e2e8f0; border-radius: 4px; margin-bottom: 20px; position: relative; }
+        .chip::after { content:''; position: absolute; border: 1px solid #94a3b8; width: 70%; height: 70%; top: 15%; left: 15%; border-radius: 2px; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--secondary); }
+        .form-group input { width: 100%; padding: 0.8rem 1rem; border: 2px solid var(--gray-light); border-radius: 8px; font-size: 1rem; transition: border 0.3s; font-family: 'Inter', sans-serif; }
+        .form-group input:focus { outline: none; border-color: var(--primary); }
+        .form-row { display: flex; gap: 1rem; }
+        .form-row .form-group { flex: 1; }
+        .summary-section { background: var(--white); padding: 2rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); height: fit-content; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 1rem; color: var(--text); }
+        .total-row { border-top: 2px solid var(--gray-light); padding-top: 1rem; margin-top: 1rem; font-weight: 700; font-size: 1.2rem; color: var(--primary); }
+        .btn-pay { width: 100%; padding: 1rem; background-color: var(--success); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1.1rem; cursor: pointer; transition: background 0.2s; margin-top: 1rem; }
+        .btn-pay:hover { background-color: #059669; }
+        .secure-badge { margin-top: 1rem; text-align: center; font-size: 0.8rem; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        @media (max-width: 768px) { .checkout-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="ss-logo">SS</div>
+        <span class="brand-name">StoreSphere Checkout</span>
+    </nav>
+
+    <div class="checkout-container">
+        <!-- LEFT: Payment Form -->
+        <div class="payment-section">
+            <h2>Payment Details</h2>
+            <div class="card-visual">
+                <div class="chip"></div>
+                <div style="font-family: monospace; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 15px;">•••• •••• •••• ••••</div>
+                <div style="display:flex; justify-content:space-between; font-size: 0.85rem; text-transform: uppercase; opacity: 0.9;">
+                    <span>Card Holder</span>
+                    <span>Expires</span>
+                </div>
+            </div>
+            <form onsubmit="processOrder(event)">
+                <div class="form-group"><label>Name on Card</label><input type="text" placeholder="e.g. Rahul Verma" required></div>
+                <div class="form-group"><label>Card Number</label><input type="text" placeholder="0000 0000 0000 0000" maxlength="19" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Expiry Date</label><input type="text" placeholder="MM/YY" maxlength="5" required></div>
+                    <div class="form-group"><label>CVV / CVC</label><input type="password" placeholder="123" maxlength="3" required></div>
+                </div>
+                <button type="submit" class="btn-pay" id="payBtn">Pay Now</button>
+            </form>
+            <div class="secure-badge">🔒 256-bit SSL Secure Payment</div>
+        </div>
+
+        <!-- RIGHT: Order Summary -->
+        <div class="summary-section">
+            <h2>Order Summary</h2>
+            <div id="orderItems"><p>Loading cart...</p></div>
+            <div class="summary-row total-row"><span>Order Total:</span><span id="totalDisplay">Rs. 0.00</span></div>
+            <a href="user_dashboard.html" style="display:block; text-align:center; margin-top:15px; text-decoration:none; color:#64748b; font-size:0.9rem;">← Cancel and return to store</a>
+        </div>
+    </div>
+
+    <script>
+        let cartData = [];
+
+        window.onload = function() {
+            fetch('/api/cart')
+            .then(res => res.json())
+            .then(data => {
+                cartData = data;
+                renderSummary(cartData);
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error loading cart. Please try again.");
+            });
+        }
+
+        function renderSummary(cart) {
+            if (cart.length === 0) {
+                alert("Your cart is empty. Redirecting to store.");
+                window.location.href = 'user_dashboard.html';
+                return;
+            }
+            const itemsContainer = document.getElementById('orderItems');
+            itemsContainer.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.qty;
+                total += itemTotal;
+                const div = document.createElement('div');
+                div.className = 'summary-row';
+                div.innerHTML = `<span>${item.name} (x${item.qty})</span><span>Rs. ${itemTotal.toFixed(2)}</span>`;
+                itemsContainer.appendChild(div);
+            });
+            document.getElementById('totalDisplay').innerText = `Rs. ${total.toFixed(2)}`;
+            document.getElementById('payBtn').innerText = `Pay Rs. ${total.toFixed(2)}`;
+        }
+
+        function processOrder(e) {
+            e.preventDefault();
+            const btn = document.getElementById('payBtn');
+            btn.innerHTML = "Processing...";
+            btn.disabled = true;
+            btn.style.backgroundColor = "#94a3b8";
+
+            // 1. Record Payment in RDS (Upsert Logic)
+            fetch('/api/record_payment', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    // 2. Save Snapshot for Bill
+                    localStorage.setItem('last_order', JSON.stringify(cartData));
+
+                    // 3. Clear Cart in DB
+                    return fetch('/api/cart/clear', { method: 'DELETE' });
+                } else {
+                    throw new Error("Payment Recording Failed");
+                }
+            })
+            .then(() => {
+                // 4. Redirect to Bill
+                window.location.href = 'bill.html';
+            })
+            .catch(err => {
+                alert("Transaction Failed: " + err.message);
+                btn.disabled = false;
+                btn.innerHTML = "Pay Now";
+                btn.style.backgroundColor = "#10b981";
+            });
+        }
+    </script>
+</body>
+</html>
