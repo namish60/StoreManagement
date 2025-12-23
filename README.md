@@ -133,6 +133,6 @@ Contributions are welcome! Please feel free to fork the repository, make changes
 
 ---
 
-**👨‍💻 Developed with passion by Nakul**
+**👨‍💻 Developed by Namish**
 
-**🚀 Building intelligent, agent-driven AI systems**
+
