@@ -1,4 +1,4 @@
-# 🚀 StoreSphere - Cloud-Native E-Commerce Application
+# 🚀 StoreManagement - Cloud-Native E-Commerce Application
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/) [![Flask](https://img.shields.io/badge/Framework-Flask-green.svg)](https://flask.palletsprojects.com/) [![AWS](https://img.shields.io/badge/Cloud-AWS-orange.svg)](https://aws.amazon.com/) [![Docker](https://img.shields.io/badge/Container-Docker-blue.svg)](https://www.docker.com/) [![Database](https://img.shields.io/badge/Database-Hybrid-lightgrey.svg)](#)
 
